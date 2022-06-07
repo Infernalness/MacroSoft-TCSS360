@@ -68,6 +68,19 @@ public class Item {
             JSONObject obj = filesArray.getJSONObject(i);
             myFiles.add(new ItemFile(obj));
         }
+
+        myTags = new ArrayList<String>();
+        if (json.has("tags")) {
+            JSONArray tagsArray = json.getJSONArray("tags");
+            for (int i = 0; i < tagsArray.length(); i++) {
+                JSONObject obj = filesArray.getJSONObject(i);
+                myTags.add(obj.toString());
+            }
+        }
+
+        if (json.has("description") {
+            myDescription = json.getString("description");
+        }
     }
 
     /**
@@ -81,7 +94,7 @@ public class Item {
 
     public String getDescription() {return myDescription;}
 
-    public String[] getTag() {
+    public String[] getTags() {
         return (String[]) myTags.toArray().clone();
     }
 
@@ -92,6 +105,15 @@ public class Item {
 
     public void removeTag(String tag) {
         myTags.remove(tag.toLowerCase());
+    }
+
+    public boolean hasTag(String tag) {
+        for (String str : myTags) {
+            if (str.equalsIgnoreCase(tag))
+                return true;
+        }
+
+        return false;
     }
 
     /**

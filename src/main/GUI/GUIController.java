@@ -34,12 +34,6 @@ import java.io.IOException;
  */
 public class GUIController extends Application {
 
-    /** The width of the GUI */
-    public static final int WIDTH = 700;
-
-    /** The height of the GUI */
-    public static final int HEIGHT = 500;
-
     /** LoginScreen class to be used to call one of the methods */
     private LoginScreen loginScreen;
 
@@ -75,7 +69,7 @@ public class GUIController extends Application {
         stage.setTitle("IterationTwo");
 
         WorkDirectoryChooser dc = new WorkDirectoryChooser(loginScreen, this, myStage);
-        Scene wdChooserPage = new Scene(dc.setUpGUI(), WIDTH, HEIGHT);
+        Scene wdChooserPage = new Scene(dc.setUpGUI());
         wdChooserPage.getStylesheets().add("/StyleSheet.css");
 
         stage.setScene(wdChooserPage);
@@ -92,7 +86,7 @@ public class GUIController extends Application {
 
         mainPane = new BorderPane();
 
-        Scene mainScene = new Scene(mainPane, WIDTH, HEIGHT);
+        Scene mainScene = new Scene(mainPane);
         mainScene.getStylesheets().add("/StyleSheet.css");
         myStage.setScene(mainScene);
 
