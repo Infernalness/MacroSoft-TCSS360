@@ -6,7 +6,6 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -43,29 +42,25 @@ public class Search extends Tab {
     /**
      * Default size of buttons
      */
-    private static final int BUTTON_SIZE = 100;
+    private static final int BUTTON_SIZE = 250;
+    private final double FILE_BUTTON_WIDTH = 500;
 
     /**
-     * Overall border pane of the GUI
+     * Pane for GUI elements
      */
-    //private BorderPane borderPane;
     private FlowPane flowPane;
-    /**
-     * Grid pane that contains GUI elements
-     */
     private GridPane gridPane;
-
     private ScrollPane fileDisplay;
+
     /**
-     * Array of Items
+     * Arrays
      */
-    //private String[] itemsListData = {"Remote", "Example1", "Example2"};
+    private ArrayList<Item> itemsList;
     private ArrayList<ItemFile> itemsFiles;
     private Item[] items;
-    private Item[] itemsList;
-    private Item[] filesList;
 
-    //private Item[] itemFiles;
+
+
     private Button[] fileButtons;
 
     /**
@@ -73,7 +68,7 @@ public class Search extends Tab {
      */
     private final Text selectText;
     private final Text searchingText;
-    //private final Text errormsg;
+    private final Text errormsg;
     /**
      * Drop down box
      */
@@ -85,13 +80,14 @@ public class Search extends Tab {
     private final TextField searchingBox;
 
     /**
-     * Buttons
+     * Button
      */
     private final Button magGlass;
 
-    private final double FILE_BUTTON_WIDTH = 500;
-
-    //private final Button selectButton;
+    /**
+     * Boolean if user choose item or file
+     */
+    private boolean itemOrFile;
 
     /**
      * Constructor that class the super method from the tabs class.
@@ -99,7 +95,7 @@ public class Search extends Tab {
      * Search button.
      *
      * @param buttonName name of the button - Search
-     * @param icon image of the button
+     * @param icon       image of the button
      */
     public Search(String buttonName, Image icon) {
 
@@ -108,63 +104,79 @@ public class Search extends Tab {
         //Text to prompt which type of search
         selectText = new Text("Select");
         selectText.getStyleClass().add("white-text");
-
+        selectText.setStyle("-fx-font: 30 arial;");
 
         //Dropdown box for user to choose type
         choiceBox = new ChoiceBox<>();
 
         choiceBox.getItems().add("Items");
         choiceBox.getItems().add("Files");
+
         //default dropdown box setting
         choiceBox.setValue("Files");
 
         String choice = choiceBox.getValue();
 
-//        selectButton = new Button("Select");
-//
-//        selectButton.setOnAction(e -> getChoice(choiceBox));
-
+        if (choice.equals("Items")) {
+            itemOrFile = true;
+        } else { //if (choice.equals("Files"))
+            itemOrFile = false;
+        }
 
         //Text to prompt which type of search
         searchingText = new Text("Searching");
         searchingText.getStyleClass().add("white-text");
+        searchingText.setStyle("-fx-font: 30 arial;");
 
         //Text field for the user to type what they're searching
         searchingBox = new TextField();
-        searchingBox.setMinSize(100, 25);
+        searchingBox.setMinSize(400, 50);
+        searchingBox.setFont(Font.font("arial", 24));
 
         //Sets up the Search button
         magGlass = new Button();
         magGlass.getStyleClass().add("transparent-square-button");
         ImageView Arrowimage = new ImageView(new Image("/searchIcon.png"));
         Arrowimage.setFitHeight(BUTTON_SIZE * .20);
-        Arrowimage.setFitWidth(BUTTON_SIZE * .40);
+        Arrowimage.setFitWidth(BUTTON_SIZE * .20);
         magGlass.setGraphic(Arrowimage);
 
+
+
         //get what user is searching for
-        final String userSearching = "";
+        //final String userSearching = "";
+        String userSearch = searchingBox.getText().toString();
+        //String userSearch = userSearching;
         magGlass.setOnAction(e -> {
-            itemsFiles = searchFile(searchingBox.getText());
+
+//            if (choice.equals("Items")) {
+//                itemsFiles = searchItem(searchingBox.getText().toLowerCase());
+//            } else { //if (choice.equals("Files"))
+//                itemsFiles = searchFile(searchingBox.getText().toLowerCase());
+//            }
+
+
+            //itemsList = searchItem(searchingBox.getText().toLowerCase());
+            itemsFiles = searchFile(searchingBox.getText().toLowerCase());
             fileDisplay.setContent(buildFileViewer());
         });
-        String userSearch = userSearching;
+
 
         //Depending on what user choose, different database
-        if (choice.equals("Items")) {
-            String item = searchingBox.getText().toLowerCase();
+        if (itemOrFile) {
             searchItem(userSearch);
         } else { //if (choice.equals("Files"))
-            String file = searchingBox.getText().toLowerCase();
             searchFile(userSearch);
         }
 
 
+
         //sets up error message
-//        javafx.scene.text.Font font = Font.font("Verdana", FontWeight.BOLD, 25);
-//        errormsg = new Text("This does not exist!");
-//        errormsg.setFill(Color.RED);
-//        errormsg.setVisible(false);
-//        errormsg.setFont(font);
+        javafx.scene.text.Font font = Font.font("Verdana", FontWeight.BOLD, 25);
+        errormsg = new Text("This does not exist!");
+        errormsg.setFill(Color.RED);
+        errormsg.setVisible(false);
+        errormsg.setFont(font);
     }
 
     /**
@@ -190,13 +202,19 @@ public class Search extends Tab {
         gridPane.add(searchingText, 0, 2);
         gridPane.add(searchingBox, 1, 2);
         gridPane.add(magGlass, 2, 2);
-        //gridPane.add(errormsg, 1, 4);
+        gridPane.add(errormsg, 1,3);
         flowPane.getChildren().add(gridPane);
 
         fileDisplay = new ScrollPane();
         fileDisplay.getStyleClass().add("scroll-pane");
         fileDisplay.setStyle("-fx-font-size: 16");
 
+//        if (itemOrFile) {
+//            fileDisplay.setContent(buildItemViewer());
+//        } else { //if (choice.equals("Files"))
+//            fileDisplay.setContent(buildFileViewer());
+//        }
+        //fileDisplay.setContent(buildItemViewer());
         fileDisplay.setContent(buildFileViewer());
         fileDisplay.setMaxHeight(stage.getHeight() - 300);
         fileDisplay.setMinWidth(FILE_BUTTON_WIDTH);
@@ -209,83 +227,121 @@ public class Search extends Tab {
 
     /**
      * Searching Items(database)
+     *
      * @param Item - item user is searching for
      * @return list of items that contains the keywords
      */
-    public Item[] searchItem(String Item) {
-        items = Database.db.getItems();
-        for (int i = 0; i < items.length; i++) {
-            //if have searched term, add to list
-            if (items[i].equals(Item)) {
-                itemsList[i] = items[i];
-            }
+    public ArrayList searchItem(String Item) {
+        itemsList = new ArrayList<>();
+
+        if (Item == null) {
+            Item = "";
+            //error message if nothing matched
+            errormsg.setVisible(true);
         }
 
-        //should be able to search with shorter characters
-//        for (int i = 0; i < items.length; i++) {
-//            //if have searched term, add to list
-//            if (items[i].indexOf(Item)) {
-//                itemsList[i] = items[i];
-//            }
-//        }
+        //add all items into arraylist
+        items = Database.db.getItems();
+        for (int i = 0; i < items.length; i++) {
+            itemsList.addAll(Arrays.asList(Database.db.getItems()));
+        }
 
-          //error message if nothing matched
-//        if (itemsList == null) {
-//            errormsg.setVisible(true);
-//        }
-//        if (itemsList.length < 1) {
-//            errormsg.setVisible(true);
-//        }
+        //Remove anything that does not have keyword
+        String finalItem = Item;
+        itemsList.removeIf(s -> !s.getName().toLowerCase().contains(finalItem));
+
         return itemsList;
     }
 
 
     /**
      * Searching Files
+     *
      * @param File - file user is searching for
      * @return list of files that contains the keywords
      */
     public ArrayList searchFile(String File) {
         itemsFiles = new ArrayList<>();
+
         if (File == null) {
             File = "";
+            //error message if nothing matched
+            errormsg.setVisible(true);
         }
-        //items.getFiles();
+
+        //add all files unto ArrayList
         items = Database.db.getItems();
         for (int i = 0; i < items.length; i++) {
-            //if have searched term, add to list
-
             itemsFiles.addAll(Arrays.asList(items[i].getFiles()));
-
         }
-        //double check
+
+        //Remove anything that does not have keyword
         String finalFile = File;
         itemsFiles.removeIf(s -> !s.getName().toLowerCase().contains(finalFile));
-
-//        if (itemsList.length == 0) {
-//            errormsg.setVisible(true);
-//        }
 
         return itemsFiles;
     }
 
-    private VBox buildFileViewer() {
+    private VBox buildItemViewer() {
+        fileButtons = new Button[itemsList.size()];
 
+        itemsList = new ArrayList<Item>();
+        itemsList.addAll(Arrays.asList(Database.db.getItems()));
 
-        fileButtons = new Button[itemsFiles.size()];
-
-        itemsFiles.sort(new Comparator<ItemFile>(){
+        //sort in alphabetical order
+        itemsList.sort(new Comparator<Item>() {
             @Override
-            public int compare(ItemFile file1, ItemFile file2) {
-                return file1.getName().compareTo(file2.getName());
-            }});
-
+            public int compare(Item item1, Item item2) {
+                return item1.getName().compareTo(item2.getName());
+            }
+        });
 
 
         //Desktop is used for opening files
         Desktop desktop = Desktop.getDesktop();
         Font fileButtonFont = new Font(24);
-        for(int i = 0; i < itemsFiles.size(); i++){
+
+        for (int i = 0; i < itemsList.size(); i++) {
+            //Initializes the item button
+            Button currFileButton = new Button("Error...");
+            currFileButton.getStyleClass().add("transparent-square-button");
+            currFileButton.setFont(fileButtonFont);
+            currFileButton.setAlignment(Pos.CENTER_LEFT);
+
+            currFileButton.setText(itemsList.get(i).getName());
+            currFileButton.setMinWidth(FILE_BUTTON_WIDTH);
+
+            fileButtons[i] = currFileButton;
+        }
+
+
+        VBox buttonGroup = new VBox(fileButtons);
+        return buttonGroup;
+    }
+
+    /**
+     * Build list to display files  - user can click on file
+     *
+     * @return VBox with list of files
+     */
+    private VBox buildFileViewer() {
+
+
+        fileButtons = new Button[itemsFiles.size()];
+
+        //sort in alphabetical order
+        itemsFiles.sort(new Comparator<ItemFile>() {
+            @Override
+            public int compare(ItemFile file1, ItemFile file2) {
+                return file1.getName().compareTo(file2.getName());
+            }
+        });
+
+
+        //Desktop is used for opening files
+        Desktop desktop = Desktop.getDesktop();
+        Font fileButtonFont = new Font(24);
+        for (int i = 0; i < itemsFiles.size(); i++) {
             //Initializes the item button
             Button currFileButton = new Button("Error...");
             currFileButton.getStyleClass().add("transparent-square-button");
@@ -299,13 +355,13 @@ public class Search extends Tab {
             currFileButton.setOnAction(clickEvent -> {
                 //Gets the file from the path
                 //Makes sure the file exists
-                if(selectedFile.exists()){
+                if (selectedFile.exists()) {
                     try {
                         desktop.open(selectedFile);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else{
+                } else {
                     System.out.println("Error: file does not exist");
                 }
             });
@@ -315,37 +371,4 @@ public class Search extends Tab {
         VBox buttonGroup = new VBox(fileButtons);
         return buttonGroup;
     }
-
-
-
-    public HBox createToolBar() {
-        HBox toolBar = new HBox();
-        toolBar.getStyleClass().add("toolbar");
-        toolBar.setAlignment(Pos.CENTER_RIGHT);
-        toolBar.setSpacing(10);
-        toolBar.setPadding(new Insets(5));
-
-
-        //Creates the close button
-        Button close = new Button(" x ");
-        close.getStyleClass().add("close-button");
-        close.setOnAction(e -> {
-            flowPane.setVisible(false);
-        });
-        toolBar.getChildren().add(close);
-
-
-        return toolBar;
-    }
-
-    /**
-     * getting the user choice of file or item
-     * @param choiceBox
-     * @return type - user choice of file/item
-     */
-    private String getChoice(ChoiceBox<String> choiceBox) {
-        String type = choiceBox.getValue();
-        return type;
-    }
-
 }
