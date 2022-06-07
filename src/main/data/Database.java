@@ -45,7 +45,15 @@ public class Database {
             JSONObject itemObj = itemsArray.getJSONObject(i);
             createItem(itemObj);
         }
-        System.out.println(items.toString());
+
+        tags = new ArrayList<String>();
+        if (json.has("tags")) {
+            JSONArray tagsArray = json.getJSONArray("tags");
+            for (int i = 0; i < tagsArray.length(); i++) {
+                JSONObject tagObj = tagsArray.getJSONObject(i);
+                tags.add(tagObj.toString());
+            }
+        }
     }
 
     /*
@@ -56,6 +64,12 @@ public class Database {
     public String getWorkingDirectory() {
         return workingDir;
     }
+
+    public DatabaseView createView(DatabaseFilter filter) {
+        DatabaseView view = new DatabaseView(this, filter);
+        return view;
+    }
+
 
     /**
      * Adds an item to the database
@@ -76,6 +90,19 @@ public class Database {
      */
     public Item createItem(String name) {
         Item item = new Item(this, name);
+        addItem(item);
+        return item;
+    }
+
+    /*
+     * Creates a new item
+     *
+     * @param name the name of the item to be created
+     * @param tags the tags of the item to be created
+     * @param description the description of the item to be created
+     */
+    public Item createItem(String name, String[] tags, String description) {
+        Item item = new Item(this, name, tags, description);
         addItem(item);
         return item;
     }
@@ -162,7 +189,7 @@ public class Database {
     }
 
     public void removeTag(String theTag) {
-
+        tags.remove(theTag);
     }
 
     public boolean hasTag(String theTag) {

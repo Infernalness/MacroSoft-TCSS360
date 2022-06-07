@@ -14,8 +14,9 @@ import javafx.stage.Stage;
 import main.GUI.ItemDisplay;
 import main.GUI.Tab;
 import main.data.Database;
-import main.data.Item;
-import main.data.ItemFile;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ItemController Class that will control the items,
@@ -43,9 +44,6 @@ public class ItemController extends Tab {
     /** The button that deletes an item */
     private Button deleteButton;
 
-    /** The button that creates an item */
-    private Button createButton;
-
     /** The text that appears on top of the borderpane */
     private Text titleText;
 
@@ -59,23 +57,6 @@ public class ItemController extends Tab {
      */
     public ItemController(String buttonName, Image icon) {
         super(buttonName, icon);
-        /*
-        Database.db.createItem("TV");
-        Database.db.createItem("Computers");
-
-        // Itemfiles are for demonstration purposes only to showcase how the application works.
-        ItemFile itemFile = new ItemFile("Samsung TV Manual", Database.db.getWorkingDirectory() + "\\SamsungTVManual.pdf");
-        ItemFile itemFile2 = new ItemFile("Samsung LED TV Manual", Database.db.getWorkingDirectory() + "\\SamsungLEDTVManual.pdf");
-
-        ItemFile itemFile3 = new ItemFile("Apple II Manual", Database.db.getWorkingDirectory() + "\\AppleIIManual.pdf");
-        ItemFile itemFile4 = new ItemFile("Windows 95 Manual", Database.db.getWorkingDirectory() + "\\Windows 95 Manual.pdf");
-
-        Database.db.getItems()[0].addFile(itemFile);
-        Database.db.getItems()[0].addFile(itemFile2);
-
-        Database.db.getItems()[1].addFile(itemFile3);
-        Database.db.getItems()[1].addFile(itemFile4);
-        */
     }
 
     /**
@@ -88,8 +69,7 @@ public class ItemController extends Tab {
      */
     @Override
     public Pane buildView(Stage stage) {
-        // Added spaces in the titleText to appear correctly in the GUI.
-        titleText = new Text("MacroSoft360's Program                              ");
+        titleText = new Text("MacroSoft360's Program");
         titleText.getStyleClass().add("white-text");
         titleText.setFont(Font.font("verdana", FontWeight.BOLD, 50));
 
@@ -102,17 +82,18 @@ public class ItemController extends Tab {
         topBar.setBackground(background);
 
         deleteButton = createButton("Delete", "/deleteIcon.png");
-        deleteButton.setOnAction(e -> deleteAItem(stage));
+        deleteButton.setOnAction(e -> deleteAItem());
 
-        createButton = createButton("Create", "/createItemIcon.png");
-        createButton.setOnAction(e -> createAItem(stage));
+        // The button that creates an item
+        Button createButton = createButton("Create", "/createItemIcon.png");
+        createButton.setOnAction(e -> createAItem());
 
         topBar.getChildren().addAll(titleText, deleteButton, createButton);
         buttonPane.setTop(topBar);
         createItemGUI(buttonPane);
         topBar.setAlignment(Pos.CENTER_RIGHT);
 
-        testItemDisplay(stage);
+        itemDisplay(stage);
 
         if(myStage == null) myStage = stage;
 
@@ -120,14 +101,17 @@ public class ItemController extends Tab {
     }
 
     /**
-     * A demonstration of how looking inside the item would look like.
+     * Displays the items in the GUI.
+     * If no items are present, the Delete button will be disabled,
+     * until another item is added.
      *
      * @param stage the stage to be changed to display the files.
      */
-    private void testItemDisplay(Stage stage) {
+    private void itemDisplay(Stage stage) {
         ItemDisplay newItemDisplay = new ItemDisplay(stage);
-        //itemButtons[0].setOnAction(e -> buttonPane.setCenter(newItemDisplay.buildView(Database.db.getItems()[0])));
-        //itemButtons[1].setOnAction(e -> buttonPane.setCenter(newItemDisplay.buildView(Database.db.getItems()[1])));
+
+        deleteButton.setDisable(Database.db.getItems().length == 0);
+
         for (int i = 0; i < itemButtons.length; i ++) {
             int finalI = i;
             itemButtons[i].setOnAction(e -> buttonPane.setCenter(newItemDisplay.buildView(Database.db.getItems()[finalI])));
@@ -201,13 +185,12 @@ public class ItemController extends Tab {
     /**
      * Method to allow the user to delete an item
      */
-    private void deleteAItem(Stage stage) {
-        // Added spaces in the titleText to appear correctly in the GUI.
-        titleText.setText("Select an item to delete:                              ");
+    private void deleteAItem() {
+        titleText.setText("Select an item to delete:");
         for (int i = 0; i < Database.db.getItems().length; i++) {
             int index = i; // index is needed since "i" can't be used inside the lambda expression
                            // Since it has to be a final or effectively final variable to work.
-            itemButtons[i].setOnAction(e -> confirmToDelete(index, stage));
+            itemButtons[i].setOnAction(e -> confirmToDelete(index));
         }
     }
 
@@ -219,7 +202,7 @@ public class ItemController extends Tab {
      *
      * @param index the index of the item in the arraylist.
      */
-    private void confirmToDelete(int index, Stage stage) {
+    private void confirmToDelete(int index) {
         BorderPane alertBox = new BorderPane();
 
         Text confirm = new Text("Are you sure you want to delete " + Database.db.getItems()[index].getName() + "?");
@@ -242,14 +225,12 @@ public class ItemController extends Tab {
             if (type == confirmButton) {
                 Database.db.removeItem(index);
                 createItemGUI(buttonPane); // Calls back to update the GUI.
-                // Added spaces in the titleText to appear correctly in the GUI.
-                titleText.setText("MacroSoft360's Program                              ");
+                titleText.setText("MacroSoft360's Program");
             } else {
                 // User selected the "no" button.
-                // Added spaces in the titleText to appear correctly in the GUI.
-                titleText.setText("MacroSoft360's Program                              ");
+                titleText.setText("MacroSoft360's Program");
             }
-            testItemDisplay(myStage);
+            itemDisplay(myStage);
         });
     }
 
@@ -257,71 +238,129 @@ public class ItemController extends Tab {
      * Method to allow the user to create a new item.
      * Duplicate names are not allowed.
      */
-    private void createAItem(Stage stage) {
-        // Added spaces in the titleText to appear correctly in the GUI.
-        titleText.setText("Creating an item...                                               ");
+    private void createAItem() {
+        titleText.setText("Creating an item...");
 
         Text dupeDisplay = new Text();
         dupeDisplay.setFill(Color.RED);
 
+        Label spacer = new Label();
+        Label spacerTwo = new Label();
+
+        // Typing the item name.
         Text itemNameText = new Text("Type a name for the item: ");
         itemNameText.getStyleClass().add("white-text");
-
         TextField userInputName = new TextField();
         userInputName.getStyleClass().add("custom-text-entry");
 
+        // Typing the tag of the item.
+        Text tagText = new Text("Tag: ");
+        tagText.getStyleClass().add("white-text");
+        TextField userInputTag = new TextField();
+        userInputTag.getStyleClass().add("custom-text-entry");
+
+        // Typing the description of the item.
+        Text descriptionText = new Text("Description: ");
+        descriptionText.getStyleClass().add("white-text");
+        TextField userInputDesc = new TextField();
+        userInputDesc.getStyleClass().add("custom-text-entry");
+
         GridPane alertPane = new GridPane(); // GridPane to be used in the alert box
         alertPane.add(itemNameText, 0, 0);
-        alertPane.add(userInputName, 0, 1);
-        alertPane.add(dupeDisplay, 0, 2);
+        alertPane.add(userInputName, 1, 0);
+        alertPane.add(spacer, 1, 1);
+        alertPane.add(tagText, 0, 2);
+        alertPane.add(userInputTag, 1, 2);
+        alertPane.add(spacerTwo, 1, 3);
+        alertPane.add(descriptionText, 0, 4);
+        alertPane.add(userInputDesc, 1, 4);
 
-        createItemAlertBox(dupeDisplay, userInputName, alertPane);
+        createItemDialogBox(userInputName, userInputTag, userInputDesc, alertPane);
 
     }
 
     /**
      * Alert box for when the user is creating an item.
      *
-     * @param invalidName text that appears when the user inputs an item name that already exists.
+     * param invalidName text that appears when the user inputs an item name that already exists.
      * @param userInputName text that displays to the user to input the name of the item.
-     * @param alertPane the pane for the alert box.
+     * @param dialogPane the pane for the dialog box.
      */
-    private void createItemAlertBox(Text invalidName, TextField userInputName, GridPane alertPane) {
-        alert = new Alert(Alert.AlertType.NONE);
-        alert.setTitle("Create Item");
-        alert.getDialogPane().getStylesheets().add("/Stylesheet.css");
+    private void createItemDialogBox(TextField userInputName, TextField userInputTag,
+                                    TextField userInputDesc, GridPane dialogPane) {
+        Dialog<ButtonType> test = new Dialog<>();
+        test.setTitle("Create Item");
+        test.getDialogPane().getStylesheets().add("/Stylesheet.css");
+        test.getDialogPane().setContent(dialogPane);
 
-        alert.getDialogPane().setContent(alertPane);
         ButtonType confirm = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        alert.getDialogPane().getButtonTypes().add(confirm);
-        alert.getDialogPane().getButtonTypes().add(cancel);
+        test.getDialogPane().getButtonTypes().add(confirm);
+        test.getDialogPane().getButtonTypes().add(cancel);
 
-        alert.showAndWait().ifPresent(type -> {
-            while (checkNameDupe(userInputName.getText())) {
-                invalidName.setText("Item with same name already exists");
-                alert.showAndWait();
-
-                if (type == cancel) {
-                    // Added spaces in the titleText to appear correctly in the GUI.
-                    titleText.setText("MacroSoft360's Program                              ");
-                    return;
+        test.showAndWait().ifPresent(type -> {
+            if (type == cancel) {
+                // The user selected the cancel button, so no items are deleted.
+                return;
+            } else if (userInputName.getText().isBlank()) { // Checks for blank space
+                showAlertBox("The item name box is blank, Please enter a name in the box");
+            } else if (checkNameDupe(userInputName.getText())) { // Checks for duplicates
+                showAlertBox("Item with same name already exists");
+            } else if (checkForSpecialCharacters(userInputName.getText())) { // Checks for special characters
+                showAlertBox("Special characters are not allowed");
+            } else if (type == confirm) {
+                Database.db.createItem(userInputName.getText());
+                if (userInputTag != null && userInputDesc != null) {
+                    Database.db.addTag(userInputTag.getText());
                 }
             }
-
-            if (type == confirm) {
-                Database.db.createItem(userInputName.getText());
-                createItemGUI(buttonPane);
-                // Added spaces in the titleText to appear correctly in the GUI.
-                titleText.setText("MacroSoft360's Program                              ");
-            } else {
-                // The user selected the cancel button, so no items are deleted.
-                // Added spaces in the titleText to appear correctly in the GUI.
-                titleText.setText("MacroSoft360's Program                              ");
-            }
-            testItemDisplay(myStage);
         });
+        titleText.setText("MacroSoft360's Program");
+        createItemGUI(buttonPane);
+        itemDisplay(myStage);
+    }
+
+    /**
+     * If the user inputs an invalid name for the item name
+     * (the user inputted a blank name, name that already exists, or
+     * special character), an error will appear displaying what the error is.
+     *
+     * @param alertMessage the message that will be displayed to the user.
+     */
+    private void showAlertBox(String alertMessage) {
+        alert = new Alert(Alert.AlertType.NONE);
+        alert.setTitle("Error");
+        alert.getDialogPane().getStylesheets().add("/Stylesheet.css");
+
+        Text alarmMessage = new Text(alertMessage);
+        alarmMessage.getStyleClass().add("white-text");
+
+        BorderPane alertPane = new BorderPane();
+        alertPane.setCenter(alarmMessage);
+        alert.getDialogPane().setContent(alertPane);
+
+        ButtonType tryAgain = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+
+        alert.getDialogPane().getButtonTypes().add(tryAgain);
+
+        alert.showAndWait();
+    }
+
+    /**
+     * Used as part of the createAItem method to check if the name
+     * of the new item contains any special characters.
+     * If so, this method will return true which indicates that the
+     * user typed a special character, false otherwise.
+     *
+     * @param newItemName the typed name for the item to be checked.
+     * @return true if a special character exists in the string, false otherwise.
+     */
+    private boolean checkForSpecialCharacters(String newItemName) {
+        Pattern specialChar = Pattern.compile("[^a-z\\d ]", Pattern.CASE_INSENSITIVE);
+        Matcher matchToCheck = specialChar.matcher(newItemName);
+
+        return matchToCheck.find();
     }
 
     /**
@@ -330,28 +369,10 @@ public class ItemController extends Tab {
      * will return true indicating that the name already exists in the Database,
      * false otherwise.
      *
+     * @param newItemName the typed name for the item to be checked.
      * @return true if name already exists, false otherwise.
      */
     private boolean checkNameDupe(String newItemName) {
         return Database.db.hasItem(newItemName);
-    }
-
-    private HBox createToolBar(String theTitle) {
-        HBox toolBar = new HBox();
-        Text title = new Text(theTitle);
-        title.setX(0);
-
-        toolBar.getChildren().add(title);
-
-        toolBar.getStyleClass().add("toolbar");
-        toolBar.setAlignment(Pos.CENTER_RIGHT);
-        toolBar.setSpacing(10);
-        toolBar.setPadding(new Insets(5));
-
-        Button close = new Button(" x ");
-        close.getStyleClass().add("close-button");
-        close.setOnAction(e -> alert.close());
-
-        return toolBar;
     }
 }
