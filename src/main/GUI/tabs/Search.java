@@ -101,6 +101,7 @@ public class Search extends Tab {
 
         super(buttonName, icon);
 
+        //first line : Select [choiceBox]
         //Text to prompt which type of search
         selectText = new Text("Select");
         selectText.getStyleClass().add("white-text");
@@ -108,7 +109,6 @@ public class Search extends Tab {
 
         //Dropdown box for user to choose type
         choiceBox = new ChoiceBox<>();
-
         choiceBox.getItems().add("Items");
         choiceBox.getItems().add("Files");
 
@@ -123,6 +123,9 @@ public class Search extends Tab {
             itemOrFile = false;
         }
 
+
+
+        //second line : Search [Search field] button
         //Text to prompt which type of search
         searchingText = new Text("Searching");
         searchingText.getStyleClass().add("white-text");
