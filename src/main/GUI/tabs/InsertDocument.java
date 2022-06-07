@@ -3,6 +3,7 @@ package main.GUI.tabs;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
@@ -131,6 +132,8 @@ public class InsertDocument extends Tab {
     private final Text SuccessMsg;
 
 
+
+
     /**
      * Constructor of the InsertDocument GUI, calling
      * methods from the super tab class
@@ -226,6 +229,7 @@ public class InsertDocument extends Tab {
         gridPane.add(errormsg, 1, 4);
         gridPane.add(SuccessMsg,1,4);
         borderPane.setCenter(gridPane);
+
         //borderPane.setMaxSize(500, 250);
         //borderPane.setTop(createToolBar());
         return borderPane;
@@ -270,35 +274,7 @@ public class InsertDocument extends Tab {
         return theText;
     }
 
-    private Button createIconButton(ImageView icon, double scale) {
-        Button theButton = new Button();
-        theButton.getStyleClass().add("transparent-square-button");
 
-        theButton.setScaleX(scale);
-        theButton.setScaleY(scale);
-        theButton.setGraphic(icon);
-
-        return theButton;
-    }
-
-    private HBox createToolBar() {
-        HBox toolBar = new HBox();
-        toolBar.getStyleClass().add("toolbar");
-        toolBar.setAlignment(Pos.CENTER_RIGHT);
-        toolBar.setSpacing(10);
-        toolBar.setPadding(new Insets(5));
-
-
-        //Creates the close button
-        Button close = new Button(" x ");
-        close.getStyleClass().add("close-button");
-        close.setOnAction(e -> {
-            borderPane.setVisible(false);
-        });
-        toolBar.getChildren().add(close);
-
-        return toolBar;
-    }
 
     /**
      * create the comboBox item that has list of item in the database
@@ -367,7 +343,7 @@ public class InsertDocument extends Tab {
                 nameStr = nameBox.getText();
                 ItemFile doc = new ItemFile(nameStr, pathStr);
                 selectItem.addFile(doc);
-                SuccessMsg.setText("Inserting Successful! The File " + doc.getName() + " is now under item " + selectItem.getName() + "!");
+                SuccessMsg.setText("Inserting Successful!");
                 SuccessMsg.setVisible(true);
 
                 
