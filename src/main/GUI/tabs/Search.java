@@ -1,7 +1,5 @@
 package main.GUI.tabs;
 
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -50,7 +48,6 @@ public class Search extends Tab {
      * Pane for GUI elements
      */
     private Pane flowPane;
-    private GridPane gridPane;
     private ScrollPane fileDisplay;
 
     /**
@@ -60,25 +57,27 @@ public class Search extends Tab {
     private ArrayList<ItemFile> itemsFiles;
     private Item[] items;
 
-
-
-    private Button[] fileButtons;
-
     /**
      * Text to show Search
      */
     private final Text selectText;
     private final Text searchingText;
-    private final Text errormsg;
+    private final Text errorMsg;
+
     /**
      * Drop down box
      */
-    private ChoiceBox<String> choiceBox;
+    private final ChoiceBox<String> choiceBox;
 
     /**
      * Text field that allows user to search
      */
     private final TextField searchingBox;
+
+    /**
+     * List of Buttons
+     */
+    private Button[] fileButtons;
 
     /**
      * Button
@@ -90,6 +89,9 @@ public class Search extends Tab {
      */
     private boolean itemOrFile;
 
+    /**
+     * Stage
+     */
     private Stage myStage;
 
     /**
@@ -98,7 +100,7 @@ public class Search extends Tab {
      * Search button.
      *
      * @param buttonName name of the button - Search
-     * @param icon       image of the button
+     * @param icon  image of the button
      */
     public Search(String buttonName, Image icon) {
 
@@ -114,6 +116,7 @@ public class Search extends Tab {
         choiceBox = new ChoiceBox<>();
         choiceBox.getItems().add("Items");
         choiceBox.getItems().add("Files");
+        choiceBox.getStyleClass().add("choice-box");
 
         //default dropdown box setting
         choiceBox.setValue("Files");
@@ -130,6 +133,7 @@ public class Search extends Tab {
         searchingBox = new TextField();
         searchingBox.setMinSize(400, 50);
         searchingBox.setFont(Font.font("arial", 24));
+        searchingBox.getStyleClass().add("custom-text-entry");
 
         //Sets up the Search button
         magGlass = new Button();
@@ -141,29 +145,52 @@ public class Search extends Tab {
 
 
 
+        //third line
+        //sets up error message
+        javafx.scene.text.Font font = Font.font("Verdana", FontWeight.BOLD, 25);
+        errorMsg = new Text("This does not exist!");
+        errorMsg.setFill(Color.RED);
+        errorMsg.setVisible(false);
+        errorMsg.setFont(font);
+
+
         //get what user is searching for - action for magGlass button
         magGlass.setOnAction(e -> {
 
-            String userSearch = searchingBox.getText().toString();
+            String userSearch = searchingBox.getText().toLowerCase();
 
-            if (itemOrFile) {
+            if (itemOrFile) { //if user choice is item
+
                 itemsList = searchItem(userSearch);
+
+                //error message if nothing matched
+                if (itemsList.isEmpty()) {
+                    errorMsg.setText("Item does not exist");
+                    errorMsg.setVisible(true);
+                } else {
+                    errorMsg.setVisible(false);
+                }
+
                 fileDisplay.setContent(buildItemViewer());
-            } else { //if (choice.equals("Files"))
+
+            } else { ////if user choice is file
+
                 itemsFiles = searchFile(userSearch);
+
+                //error message if nothing matched
+                if (itemsFiles.isEmpty()) {
+                    //error message if nothing matched
+                    errorMsg.setText("File does not exist");
+                    errorMsg.setVisible(true);
+                } else {
+                    errorMsg.setVisible(false);
+                }
+
                 fileDisplay.setContent(buildFileViewer());
+
             }
 
         });
-
-
-
-        //sets up error message
-        javafx.scene.text.Font font = Font.font("Verdana", FontWeight.BOLD, 25);
-        errormsg = new Text("This does not exist!");
-        errormsg.setFill(Color.RED);
-        errormsg.setVisible(false);
-        errormsg.setFont(font);
     }
 
     /**
@@ -177,7 +204,7 @@ public class Search extends Tab {
         //borderPane = new BorderPane();
         flowPane = new FlowPane(Orientation.VERTICAL);
         ((FlowPane)flowPane).setAlignment(Pos.TOP_CENTER);
-        gridPane = new GridPane();
+        GridPane gridPane = new GridPane();
         myStage = stage;
 
         //set size and align elements
@@ -190,12 +217,13 @@ public class Search extends Tab {
         gridPane.add(searchingText, 0, 2);
         gridPane.add(searchingBox, 1, 2);
         gridPane.add(magGlass, 2, 2);
-        gridPane.add(errormsg, 1,3);
+        gridPane.add(errorMsg, 1,3);
         flowPane.getChildren().add(gridPane);
 
         //action for user choosing type
         choiceBox.setOnAction( e-> {
             String choice = choiceBox.getValue();
+            errorMsg.setVisible(false);
 
             if (choice.equals("Items")) {
                 itemOrFile = true;
@@ -220,7 +248,6 @@ public class Search extends Tab {
         fileDisplay.getStyleClass().add("scroll-pane");
         fileDisplay.setStyle("-fx-font-size: 16");
 
-        //fileDisplay.setContent(buildItemViewer());
         itemsList = searchItem("");
         itemsFiles = searchFile("");
         fileDisplay.setContent(buildFileViewer());
@@ -245,7 +272,7 @@ public class Search extends Tab {
         if (itemSearch == null) {
             itemSearch = "";
             //error message if nothing matched
-            errormsg.setVisible(true);
+            errorMsg.setVisible(true);
         }
 
         //add all items into arraylist
@@ -273,13 +300,13 @@ public class Search extends Tab {
         if (fileSearch == null) {
             fileSearch = "";
             //error message if nothing matched
-            errormsg.setVisible(true);
+            errorMsg.setVisible(true);
         }
 
         //add all files unto ArrayList
         items = Database.db.getItems();
-        for (int i = 0; i < items.length; i++) {
-            itemsFiles.addAll(Arrays.asList(items[i].getFiles()));
+        for (Item item : items) {
+            itemsFiles.addAll(Arrays.asList(item.getFiles()));
         }
 
         //Remove anything that does not have keyword
@@ -289,8 +316,16 @@ public class Search extends Tab {
         return itemsFiles;
     }
 
+
+    /**
+     * Build list to display items - user can click on item
+     *
+     * @return VBox with list of items
+     */
     private VBox buildItemViewer() {
         fileButtons = new Button[itemsList.size()];
+
+        Font fileButtonFont = new Font(24);
 
         //sort in alphabetical order
         itemsList.sort(new Comparator<Item>() {
@@ -300,10 +335,6 @@ public class Search extends Tab {
             }
         });
 
-
-        //Desktop is used for opening files
-        Desktop desktop = Desktop.getDesktop();
-        Font fileButtonFont = new Font(24);
 
         for (int i = 0; i < itemsList.size(); i++) {
             //Initializes the item button
@@ -326,9 +357,9 @@ public class Search extends Tab {
         }
 
 
-        VBox buttonGroup = new VBox(fileButtons);
-        return buttonGroup;
+        return new VBox(fileButtons);
     }
+
 
     /**
      * Build list to display files  - user can click on file
@@ -379,7 +410,6 @@ public class Search extends Tab {
             fileButtons[i] = currFileButton;
         }
 
-        VBox buttonGroup = new VBox(fileButtons);
-        return buttonGroup;
+        return new VBox(fileButtons);
     }
 }
