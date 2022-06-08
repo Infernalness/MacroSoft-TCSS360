@@ -231,7 +231,6 @@ public class Search extends Tab {
                 for (Item x : itemsList) {
                     System.out.println(x);
                 }
-
                 fileDisplay.setContent(buildItemViewer());
             } else { //if (choice.equals("Files"))
                 itemOrFile = false;
@@ -250,7 +249,12 @@ public class Search extends Tab {
 
         itemsList = searchItem("");
         itemsFiles = searchFile("");
-        fileDisplay.setContent(buildFileViewer());
+
+        if (itemOrFile) {
+            fileDisplay.setContent(buildItemViewer());
+        } else {
+            fileDisplay.setContent(buildFileViewer());
+        }
         fileDisplay.setMaxHeight(stage.getHeight() - 300);
         fileDisplay.setMinWidth(FILE_BUTTON_WIDTH);
         fileDisplay.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
