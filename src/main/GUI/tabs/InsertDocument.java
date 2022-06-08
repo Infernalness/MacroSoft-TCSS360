@@ -245,7 +245,7 @@ public class InsertDocument extends Tab {
      * Method that clears the text in all text fields
      *
      */
-    private void clearTextFields() {
+    public void clearTextFields() {
         filePathBox.clear();
         nameBox.clear();
     }
@@ -254,7 +254,7 @@ public class InsertDocument extends Tab {
      * Metehod that create the textfield
      * @return the created textfield
      */
-    private TextField createField() {
+    public TextField createField() {
         TextField theField = new TextField();
         theField.setMinSize(100 * SCALE, 25 * SCALE);
         theField.getStyleClass().add("custom-text-entry");
@@ -267,7 +267,7 @@ public class InsertDocument extends Tab {
      * @param text the text want to be filled in into the javafx text object
      * @return the created text object
      */
-    private Text createText(String text) {
+    public Text createText(String text) {
         Text theText = new Text(text);
         theText.getStyleClass().add("white-text");
         theText.setFont(new Font(FONT_SIZE));
@@ -282,7 +282,7 @@ public class InsertDocument extends Tab {
      * @param items the database item list
      * @return the created ComboBox item
      */
-    private ComboBox<Item> createItemDropDown(ArrayList<Item> items){
+    public ComboBox<Item> createItemDropDown(ArrayList<Item> items){
 
         ObservableList<Item> options = FXCollections.observableArrayList();
         Item[] list = Database.db.getItems();
@@ -300,7 +300,7 @@ public class InsertDocument extends Tab {
     /**
      * Add Action listener to the buttons
      */
-    private void addButtonListener(){
+    public void addButtonListener(){
 
         select.setOnAction(e -> {
             Stage temp = new Stage();
@@ -323,7 +323,19 @@ public class InsertDocument extends Tab {
             myFile = new File(filePathBox.getText());
             selectItem = (Item) objectBox.getValue();
             if(filePathBox.getText().equals("") || objectBox.getValue() == null || nameBox.getText().equals("")) {
-                errormsg.setText("All fields need to be filled before inserting!");
+                StringBuilder str = new StringBuilder();
+                str.append("Missing ");
+                if(filePathBox.getText().equals("")){
+                    str.append("(filePath) ");
+                }
+                if(objectBox.getValue() == null){
+                    str.append("(Item) ");
+                }
+                if(nameBox.getText().equals("")){
+                    str.append("(Name) ");
+                }
+                str.append("!");
+                errormsg.setText(str.toString());
                 SuccessMsg.setVisible(false);
                 errormsg.setVisible(true);
             }
@@ -353,7 +365,70 @@ public class InsertDocument extends Tab {
         );
     }
 
+    /** all the getters */
+    public BorderPane getBorderPane() {
+        return borderPane;
+    }
 
+    public GridPane getGridPane() {
+        return gridPane;
+    }
+
+    public Text getFilePath() {
+        return filePath;
+    }
+
+    public Text getObj() {
+        return obj;
+    }
+
+    public Text getName() {
+        return name;
+    }
+
+    public TextField getFilePathBox() {
+        return filePathBox;
+    }
+
+    public ComboBox getObjectBox() {
+        return objectBox;
+    }
+
+    public TextField getNameBox() {
+        return nameBox;
+    }
+
+    public Button getSelect() {
+        return select;
+    }
+
+    public Button getInsertDoc() {
+        return insertDoc;
+    }
+
+    public String getPathStr() {
+        return pathStr;
+    }
+
+    public String getNameStr() {
+        return nameStr;
+    }
+
+    public Item getSelectItem() {
+        return selectItem;
+    }
+
+    public File getMyFile() {
+        return myFile;
+    }
+
+    public Text getErrormsg() {
+        return errormsg;
+    }
+
+    public Text getSuccessMsg() {
+        return SuccessMsg;
+    }
 
 
 }
