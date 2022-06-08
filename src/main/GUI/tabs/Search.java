@@ -228,16 +228,10 @@ public class Search extends Tab {
             if (choice.equals("Items")) {
                 itemOrFile = true;
                 itemsList = searchItem("");
-                for (Item x : itemsList) {
-                    System.out.println(x);
-                }
                 fileDisplay.setContent(buildItemViewer());
             } else { //if (choice.equals("Files"))
                 itemOrFile = false;
                 itemsFiles = searchFile("");
-                for (ItemFile x : itemsFiles) {
-                    System.out.println(x);
-                }
                 fileDisplay.setContent(buildFileViewer());
             }
         });
