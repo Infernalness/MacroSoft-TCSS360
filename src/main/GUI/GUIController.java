@@ -230,8 +230,8 @@ public class GUIController extends Application {
 
         tabButton.setOnAction(clickEvent -> {
             try {
-                Database.db.save();
                 Database.db.cacheAllFiles();
+                Database.db.save();
             } catch (IOException e) {
                 e.printStackTrace();
             }
