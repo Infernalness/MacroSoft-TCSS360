@@ -78,7 +78,7 @@ public class Item {
             }
         }
 
-        if (json.has("description") {
+        if (json.has("description")) {
             myDescription = json.getString("description");
         }
     }

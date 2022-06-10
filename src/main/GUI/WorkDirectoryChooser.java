@@ -20,6 +20,7 @@ import org.json.JSONTokener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
+import java.util.prefs.Preferences;
 
 /**
  * Picks a working directory to use for the database.
@@ -197,7 +198,7 @@ public class WorkDirectoryChooser {
      * @return the file path to the directory
      */
     private String checkSavedDirectory() {
-        try {
+        /*try {
             FileReader dirReader = new FileReader(getDir());
             BufferedReader buffReader = new BufferedReader(dirReader);
             String directory = buffReader.readLine();
@@ -210,20 +211,24 @@ public class WorkDirectoryChooser {
         } catch (Exception e) {
             e.printStackTrace();
             return "";
-        }
+        }*/
+        Preferences prefs = Preferences.userRoot();
+        return prefs.get("filepath", "");
     }
 
     /**
      * Saves the file path to the filepath.txt
      */
     private void saveDirectory() {
-        try {
+        /*try {
             FileWriter dirWriter = new FileWriter(getDir());
             dirWriter.write(directoryInput.getText());
             dirWriter.close();
         } catch (IOException e){
             e.printStackTrace();
-        }
+        }*/
+        Preferences prefs = Preferences.userRoot();
+        prefs.put("filepath", directoryInput.getText());
 
     }
 

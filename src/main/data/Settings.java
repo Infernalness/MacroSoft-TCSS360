@@ -78,7 +78,7 @@ public class Settings {
             File theFile = fileChooser.showSaveDialog(aStage);
 
             PrintWriter writer = new PrintWriter(theFile);
-            writer.println(User.activeUser.getUserName() + "," + User.activeUser.getEmailAddress());
+            writer.println(User.activeUser.getUserName() + "," + User.activeUser.getPassword());
             writer.close();
         }catch (NullPointerException e) {
             System.out.println("No File Selected");

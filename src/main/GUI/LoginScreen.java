@@ -5,7 +5,6 @@ package main.GUI;
 
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Separator;
@@ -16,7 +15,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import main.data.Database;
 import main.data.User;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -179,7 +177,7 @@ public class LoginScreen {
                     JSONTokener tokener = new JSONTokener(jsonReader);
                     JSONObject theJSON = new JSONObject(tokener);
                     User selectedUser = new User(theJSON);
-                    if(selectedUser.getEmailAddress().equals(checkPass)){
+                    if(selectedUser.getPassword().equals(checkPass)){
                         //LOGIN SUCCESS
                         User.activeUser = selectedUser;
                         guiControl.buildMainView();
@@ -205,7 +203,7 @@ public class LoginScreen {
      */
     public void signUp() {
         submitButton.setOnAction(clickEvent -> {
-            if(inputPassVerify.getText().equals(inputPass.getText())){
+            if(inputPassVerify.getText().equals(inputPass.getText()) && inputUser.getText().length() > 0){
                 File newUserFile = new File(User.getFileDirectory(inputUser.getText()));
                 if(newUserFile.exists()) {
                     displayError("User name already taken...");
@@ -214,7 +212,10 @@ public class LoginScreen {
                     new User(inputUser.getText(), inputPass.getText());
                     displaySuccess("New user created!");
                 }
-            } else{
+            } else if(inputUser.getText().length() <= 0) {
+                displayError("Please input a username...");
+            }
+            else{
                 displayError("Password doesn't match...");
             }
         });

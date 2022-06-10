@@ -62,7 +62,7 @@ public class User {
 
     public String getUserName(){ return myName;}
 
-    public String getEmailAddress() {return myPassword;}
+    public String getPassword() {return myPassword;}
 
     /**
      * Overrides the toString method to print out the correct
